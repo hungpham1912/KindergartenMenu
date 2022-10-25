@@ -4,12 +4,18 @@ import { User } from 'src/module/core/users/entities/user.entity';
 
 export class DatabaseConfig {
   config: TypeOrmModuleOptions = {
-    type: 'mysql',
+    type: 'postgres',
+    port: 5432,
     host: process.env.HOST,
     username: process.env.USER_NAME,
     password: process.env.PASSWORD,
     database: process.env.DATABASE,
     entities: [Manager, User],
+    extra: {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
     synchronize: true,
   };
 
