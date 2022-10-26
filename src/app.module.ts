@@ -10,6 +10,8 @@ import {
 import { DatabaseConfig } from '../database/database.config';
 import { ClientModule } from './module/client/client.module';
 import { OperatorModule } from './module/operator/operator.module';
+import { CoreModule } from './module/core/core.module';
+import { DishMealModule } from './module/core/dish_meal/dish_meal.module';
 
 const customProvider: Array<any> = [
   {
@@ -44,6 +46,14 @@ const customProvider: Array<any> = [
         module: ClientModule,
       },
     ]),
+    CoreModule,
+    RouterModule.register([
+      {
+        path: 'api/v1/operator',
+        module: CoreModule,
+      },
+    ]),
+    DishMealModule,
   ],
   providers: [...customProvider],
 })

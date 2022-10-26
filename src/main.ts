@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ClientModule } from './module/client/client.module';
+import { CoreModule } from './module/core/core.module';
 import { OperatorModule } from './module/operator/operator.module';
 
 async function bootstrap() {
@@ -35,6 +36,19 @@ async function bootstrap() {
   });
 
   SwaggerModule.setup('operator/docs/api', app, OperatorDocument);
+
+  // Setup Core Swagger
+  const CoreSwagger = new DocumentBuilder()
+    .setTitle('Project API - System')
+    .setDescription('API documentation for version 1 project')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const CoreDocument = SwaggerModule.createDocument(app, CoreSwagger, {
+    include: [CoreModule],
+  });
+
+  SwaggerModule.setup('core/docs/api', app, CoreDocument);
 
   // Setup auto-validations
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
