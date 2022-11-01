@@ -7,16 +7,10 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { DishsService } from './dishs.service';
-import { CreateDishDto } from './dto/create-dish.dto';
+import { CreateDishDto, DishDto } from './dto/create-dish.dto';
 import { DishStatus } from './entities/dish.entity';
 
 @ApiTags('Dish')
@@ -27,20 +21,18 @@ export class DishsController {
   @ApiBody({
     schema: {
       type: 'object',
-      example: [
-        {
-          nameDish: 'Cơm',
-          ingredients: [{ name: 'Gao', calories: 100, mass: 0.2 }],
-          calories: 100,
-          unitPrice: 5000,
-          dishStatus: DishStatus.SIDE_DISH,
-        },
-      ],
+      example: {
+        nameDish: 'Cơm',
+        ingredients: [{ name: 'Gao', calories: 100, mass: 0.2 }],
+        calories: 100,
+        unitPrice: 5000,
+        dishStatus: DishStatus.SIDE_DISH,
+      },
     },
   })
   @Post()
-  create(@Body() createDishDto: [CreateDishDto]) {
-    return this.dishsService.create(createDishDto);
+  async create(@Body() createDishDto: CreateDishDto) {
+    return await this.dishsService.create(createDishDto);
   }
 
   @ApiQuery({
@@ -71,25 +63,35 @@ export class DishsController {
     return this.dishsService.findOne(id);
   }
 
-  @ApiBody({
-    schema: {
-      type: 'object',
-      example: {
-        nameDish: 'Cơm',
-        ingredients: [{ name: 'Gao', calories: 100, mass: 0.2 }],
-        calories: 100,
-        unitPrice: 5000,
-        dishStatus: DishStatus.SIDE_DISH,
-      },
-    },
-  })
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDishDto: CreateDishDto) {
-    return this.dishsService.update(id, updateDishDto);
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     example: {
+  //       nameDish: 'Cơm',
+  //       ingredients: [{ name: 'Gao', calories: 100, mass: 0.2 }],
+  //       calories: 100,
+  //       unitPrice: 5000,
+  //       dishStatus: DishStatus.SIDE_DISH,
+  //     },
+  //   },
+  // })
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateDishDto: CreateDishDto) {
+  //   return this.dishsService.update(id, updateDishDto);
+  // }
+
+  @Patch('superUpdate')
+  async superUpdate() {
+    return await this.dishsService.superUpdate();
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.dishsService.remove(id);
+  }
+
+  @Post('add')
+  async add() {
+    await this.dishsService.add();
   }
 }

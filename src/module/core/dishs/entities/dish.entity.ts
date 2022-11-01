@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -28,9 +29,15 @@ export class Dish {
   @Column({ default: 0 })
   unitPrice: number;
 
+  @Column({ default: 0 })
+  position: number;
+
   @Column({ default: DishStatus.DESSERTS, enum: DishStatus, type: 'enum' })
   dishStatus: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deletedAt: Date;
 }
