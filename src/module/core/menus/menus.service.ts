@@ -195,13 +195,11 @@ export class MenusService {
        *********Check duplicate dish main**********
        */
       if (list1.includes(Number(id1))) return;
-      list1.push(Number(id1));
 
       const id2 = parseInt(
         item.slice(GAConstant.numberBitBinary, 2 * GAConstant.numberBitBinary),
         2,
       ).toString(10);
-      list2.push(Number(id2));
 
       const id3 = parseInt(
         item.slice(
@@ -210,6 +208,9 @@ export class MenusService {
         ),
         2,
       ).toString(10);
+
+      list2.push(Number(id2));
+      list1.push(Number(id1));
       list3.push(Number(id3));
     });
 
@@ -313,7 +314,7 @@ export class MenusService {
   suitability(price: number, calories: number) {
     return Math.round(
       GAConstant.K /
-        (Math.abs(price - MealStandard.price) +
+        (Math.abs(price - MealStandard.price) / 100 +
           Math.abs(calories - MealStandard.calories) +
           1),
     );

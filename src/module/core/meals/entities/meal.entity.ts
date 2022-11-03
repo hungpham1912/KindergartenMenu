@@ -53,7 +53,7 @@ export const GAConstant = {
   sizePopulation: 10,
   numberBitBinary: 5,
   daysOfWeek: 6,
-  K: 10000000,
+  K: 100000,
 };
 
 export class Individual {

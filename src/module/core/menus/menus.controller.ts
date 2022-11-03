@@ -24,22 +24,6 @@ export class MenusController {
 
   @Get('demo')
   demo() {
-    const now = new Date();
-    console.log(
-      '🚀 ~ file: menus.controller.ts ~ line 28 ~ MenusController ~ demo ~ now',
-      now,
-    );
-
-    const ts = new Date('2022-10-06T04:25:41.551Z');
-    console.log(
-      '🚀 ~ file: menus.controller.ts ~ line 34 ~ MenusController ~ demo ~ ts',
-      ts,
-    );
-
-    if (now < ts) {
-      return true;
-    }
-
-    return false;
+    return this.menusService.suitability(45000, 550);
   }
 }
