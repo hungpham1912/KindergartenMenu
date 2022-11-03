@@ -125,6 +125,7 @@ export class MenusService {
       mealsDto.push({ timeOfWeek: j, menuId: menuId });
     }
 
+    const updateMealDto = [];
     const ds: Meal[] = await this.mealRepository.save(mealsDto);
 
     let mealDishDto = [];
@@ -142,6 +143,12 @@ export class MenusService {
         return item.position == data.listDessertsIds[j];
       });
 
+      const calories = main.calories + side.calories + dessert.calories;
+      const price = main.unitPrice + side.unitPrice + dessert.unitPrice;
+      const priorityLevel = this.suitability(price, calories);
+
+      updateMealDto.push({ calories, price, priorityLevel, id: ds[j].id });
+
       mealDishDto = mealDishDto.concat([
         { mealId: ds[j].id, dishId: main.id },
         { mealId: ds[j].id, dishId: side.id },
@@ -149,6 +156,7 @@ export class MenusService {
       ]);
     }
 
+    await this.mealRepository.save(updateMealDto);
     return await this.dishMealRepository.save(mealDishDto);
   }
 
@@ -164,7 +172,6 @@ export class MenusService {
       const mother = population[i + 1].chromosome;
 
       const child1 = father.slice(0, point) + mother.slice(point);
-
       child.push(child1);
 
       const child2 = mother.slice(0, point) + father.slice(point);
@@ -180,33 +187,30 @@ export class MenusService {
     const list3 = oldData.listDessertsIds;
 
     newData.forEach((item) => {
-      if (list1.length < GAConstant.daysOfWeek) {
-        const id1 = parseInt(
-          item.slice(0, GAConstant.numberBitBinary),
-          2,
-        ).toString(10);
+      const id1 = parseInt(
+        item.slice(0, GAConstant.numberBitBinary),
+        2,
+      ).toString(10);
+      /*
+       *********Check duplicate dish main**********
+       */
+      if (list1.includes(Number(id1))) return;
+      list1.push(Number(id1));
 
-        if (list1.includes(Number(id1))) return;
-        list1.push(Number(id1));
+      const id2 = parseInt(
+        item.slice(GAConstant.numberBitBinary, 2 * GAConstant.numberBitBinary),
+        2,
+      ).toString(10);
+      list2.push(Number(id2));
 
-        const id2 = parseInt(
-          item.slice(
-            GAConstant.numberBitBinary,
-            2 * GAConstant.numberBitBinary,
-          ),
-          2,
-        ).toString(10);
-        list2.push(Number(id2));
-
-        const id3 = parseInt(
-          item.slice(
-            2 * GAConstant.numberBitBinary,
-            3 * GAConstant.numberBitBinary,
-          ),
-          2,
-        ).toString(10);
-        list3.push(Number(id3));
-      }
+      const id3 = parseInt(
+        item.slice(
+          2 * GAConstant.numberBitBinary,
+          3 * GAConstant.numberBitBinary,
+        ),
+        2,
+      ).toString(10);
+      list3.push(Number(id3));
     });
 
     const result: TargetMenu = {
@@ -230,7 +234,6 @@ export class MenusService {
           data: item,
           suitability: suitability,
           adaptability: 0,
-          isSelected: false,
         };
         return result;
       })
@@ -270,7 +273,7 @@ export class MenusService {
                   {
                     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                     error: 'INTERNAL_SERVER_ERROR',
-                    message: 'Số lượng bản ghi trong bảng món ăn > 31',
+                    message: 'Số lượng bản ghi trong bảng món ăn > 32',
                   },
                   HttpStatus.INTERNAL_SERVER_ERROR,
                 );
@@ -308,11 +311,11 @@ export class MenusService {
   }
 
   suitability(price: number, calories: number) {
-    return (
-      1 /
-      (Math.abs(price - MealStandard.price) +
-        Math.abs(calories - MealStandard.calories) +
-        1)
+    return Math.round(
+      GAConstant.K /
+        (Math.abs(price - MealStandard.price) +
+          Math.abs(calories - MealStandard.calories) +
+          1),
     );
   }
 

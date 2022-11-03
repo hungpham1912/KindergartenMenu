@@ -28,6 +28,9 @@ export class Meal {
   @Column({ default: 0, type: 'float' })
   calories: number;
 
+  @Column({ default: false })
+  canUse: boolean;
+
   @Column({ default: 0 })
   price: number;
 
@@ -50,6 +53,7 @@ export const GAConstant = {
   sizePopulation: 10,
   numberBitBinary: 5,
   daysOfWeek: 6,
+  K: 10000000,
 };
 
 export class Individual {
@@ -57,7 +61,6 @@ export class Individual {
   chromosome?: string;
   suitability: number;
   adaptability: number;
-  isSelected: boolean;
   spacePercent?: {
     min: number;
     max: number;

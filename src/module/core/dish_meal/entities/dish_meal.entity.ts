@@ -24,7 +24,7 @@ export class DishMeal {
   })
   dish: Dish;
 
-  @ManyToOne(() => Meal, (meal) => meal.id)
+  @ManyToOne(() => Meal, (meal) => meal.dishMeal)
   meal: Meal;
 
   @CreateDateColumn({ default: false, type: 'timestamp' })

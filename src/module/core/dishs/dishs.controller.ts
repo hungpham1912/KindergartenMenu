@@ -92,6 +92,6 @@ export class DishsController {
 
   @Post('add')
   async add() {
-    await this.dishsService.add();
+    return await this.dishsService.add();
   }
 }
