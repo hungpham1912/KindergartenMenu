@@ -34,7 +34,14 @@ export class DishsService {
   }
 
   async add() {
-    return await this.dishRepository.find({ where: { nameDish: 'Mỳ' } });
+    return await this.dishRepository.find({
+      where: { dishStatus: DishStatus.SIDE_DISH },
+      select: {
+        id: true,
+        position: true,
+        nameDish: true,
+      },
+    });
   }
 
   findOne(id: string) {
@@ -45,16 +52,8 @@ export class DishsService {
     return this.dishRepository.update(id, updateDishDto);
   }
 
-  async superUpdate() {
-    const list = await this.dishRepository.find({
-      where: { dishStatus: DishStatus.SIDE_DISH },
-    });
-    console.log(
-      '🚀 ~ file: dishs.service.ts ~ line 209 ~ DishsService ~ Update ~ list',
-    );
-    for (let i = 1; i <= list.length; i++) {
-      await this.dishRepository.update(list[i - 1].id, { position: i });
-    }
+  async superUpdate(id: string, createDishDto: any) {
+    await this.dishRepository.update(id, createDishDto);
   }
   remove(id: string) {
     return this.dishRepository.softDelete(id);

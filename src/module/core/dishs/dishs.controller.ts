@@ -10,7 +10,7 @@ import {
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { DishsService } from './dishs.service';
-import { CreateDishDto, DishDto } from './dto/create-dish.dto';
+import { CreateDishDto } from './dto/create-dish.dto';
 import { DishStatus } from './entities/dish.entity';
 
 @ApiTags('Dish')
@@ -63,26 +63,15 @@ export class DishsController {
     return this.dishsService.findOne(id);
   }
 
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     example: {
-  //       nameDish: 'Cơm',
-  //       ingredients: [{ name: 'Gao', calories: 100, mass: 0.2 }],
-  //       calories: 100,
-  //       unitPrice: 5000,
-  //       dishStatus: DishStatus.SIDE_DISH,
-  //     },
-  //   },
-  // })
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateDishDto: CreateDishDto) {
-  //   return this.dishsService.update(id, updateDishDto);
-  // }
-
-  @Patch('superUpdate')
-  async superUpdate() {
-    return await this.dishsService.superUpdate();
+  @ApiBody({
+    schema: {
+      type: 'object',
+      example: {},
+    },
+  })
+  @Patch(':id')
+  async superUpdate(@Param('id') id: string, @Body() createDishDto: any) {
+    return await this.dishsService.superUpdate(id, createDishDto);
   }
 
   @Delete(':id')

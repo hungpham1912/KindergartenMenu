@@ -92,7 +92,10 @@ export class MenusService {
        */
       data = this.standardizedIndividual(data, childChromosome);
     }
-
+    console.log(
+      '🚀 ~ file: menus.service.ts ~ line 94 ~ MenusService ~ genKindergarten ~ data',
+      data,
+    );
     await this.createMeals(createMenu.id, data);
     return await this.menuRepository.findOne({ where: { id: createMenu.id } });
   }
@@ -186,32 +189,70 @@ export class MenusService {
     const list2 = oldData.listSideIds;
     const list3 = oldData.listDessertsIds;
 
-    newData.forEach((item) => {
-      const id1 = parseInt(
-        item.slice(0, GAConstant.numberBitBinary),
-        2,
-      ).toString(10);
-      /*
-       *********Check duplicate dish main**********
-       */
-      if (list1.includes(Number(id1))) return;
+    newData.forEach(async (item) => {
+      if (list1.length < GAConstant.daysOfWeek) {
+        const id1 = parseInt(
+          item.slice(0, GAConstant.numberBitBinary),
+          2,
+        ).toString(10);
 
-      const id2 = parseInt(
-        item.slice(GAConstant.numberBitBinary, 2 * GAConstant.numberBitBinary),
-        2,
-      ).toString(10);
+        const id2 = parseInt(
+          item.slice(
+            GAConstant.numberBitBinary,
+            2 * GAConstant.numberBitBinary,
+          ),
+          2,
+        ).toString(10);
 
-      const id3 = parseInt(
-        item.slice(
-          2 * GAConstant.numberBitBinary,
-          3 * GAConstant.numberBitBinary,
-        ),
-        2,
-      ).toString(10);
+        const id3 = parseInt(
+          item.slice(
+            2 * GAConstant.numberBitBinary,
+            3 * GAConstant.numberBitBinary,
+          ),
+          2,
+        ).toString(10);
 
-      list2.push(Number(id2));
-      list1.push(Number(id1));
-      list3.push(Number(id3));
+        if (Number(id1) > 31 || Number(id2) > 31 || Number(id3) > 31) return;
+
+        const main = await this.dishRepository.findOne({
+          where: {
+            position: Number(id1),
+            dishStatus: DishStatus.MAIN_DISH,
+          },
+        });
+
+        const side = await this.dishRepository.findOne({
+          where: {
+            position: Number(id2),
+            dishStatus: DishStatus.SIDE_DISH,
+          },
+        });
+
+        const dessert = await this.dishRepository.findOne({
+          where: {
+            position: Number(id3),
+            dishStatus: DishStatus.DESSERTS,
+          },
+        });
+
+        const calories = main.calories + side.calories + dessert.calories;
+        const price = main.unitPrice + side.unitPrice + dessert.unitPrice;
+        const priorityLevel = this.suitability(price, calories);
+        console.log(
+          '🚀 ~ file: menus.service.ts ~ line 238 ~ MenusService ~ newData.forEach ~ priorityLevel',
+          priorityLevel,
+        );
+
+        if (priorityLevel < 200) return;
+        /*
+         *********Check duplicate dish main**********
+         */
+        if (list1.includes(Number(id1))) return;
+
+        list2.push(Number(id2));
+        list1.push(Number(id1));
+        list3.push(Number(id3));
+      }
     });
 
     const result: TargetMenu = {
