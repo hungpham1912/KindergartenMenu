@@ -24,6 +24,19 @@ export class MenusController {
 
   @Get('demo')
   demo() {
-    return this.menusService.suitability(45000, 550);
+    const test = '0101011010';
+    const ts = this.replaceAt(test, 3, '0');
+    console.log(
+      '🚀 ~ file: menus.controller.ts ~ line 29 ~ MenusController ~ demo ~ ts',
+      ts,
+    );
+  }
+
+  replaceAt(str, index, replacement) {
+    return (
+      str.substring(0, index) +
+      replacement +
+      str.substring(index + replacement.length)
+    );
   }
 }

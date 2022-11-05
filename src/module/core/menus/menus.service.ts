@@ -88,14 +88,15 @@ export class MenusService {
        */
       const childChromosome = this.crossBreeding(encodingChromosome);
       /*
-       *********Check the duplicate of main dish**********
+       *********Mutation**********
        */
-      data = this.standardizedIndividual(data, childChromosome);
+      const afterMutation = this.mutation(childChromosome);
+      /*
+       *********Check the duplicate of main dish and **********
+       */
+      data = this.standardizedIndividual(data, afterMutation);
     }
-    console.log(
-      '🚀 ~ file: menus.service.ts ~ line 94 ~ MenusService ~ genKindergarten ~ data',
-      data,
-    );
+
     await this.createMeals(createMenu.id, data);
     return await this.menuRepository.findOne({ where: { id: createMenu.id } });
   }
@@ -163,6 +164,39 @@ export class MenusService {
     return await this.dishMealRepository.save(mealDishDto);
   }
 
+  mutation(data: string[]): string[] {
+    const length = Math.floor(Math.random() * 15);
+
+    const arrayMutation = [];
+
+    for (let i = 0; i < length; i++) {
+      arrayMutation.push(Math.floor(Math.random() * 15));
+    }
+
+    const newData = [];
+
+    data.forEach((item) => {
+      let ds = item;
+      for (let j = 0; j < arrayMutation.length; j++) {
+        if (ds[arrayMutation[j]] === '0')
+          ds = this.replaceAt(ds, arrayMutation[j], '1');
+        if (data[arrayMutation[j]] === '1')
+          ds = this.replaceAt(ds, arrayMutation[j], '0');
+      }
+      newData.push(ds);
+    });
+
+    return newData;
+  }
+
+  replaceAt(str: string, index: number, replacement: string) {
+    return (
+      str.substring(0, index) +
+      replacement +
+      str.substring(index + replacement.length)
+    );
+  }
+
   crossBreeding(population: Individual[]) {
     const point = Math.floor(
       Math.random() * (GAConstant.numberBitBinary * 3 - 2),
@@ -212,8 +246,6 @@ export class MenusService {
           2,
         ).toString(10);
 
-        if (Number(id1) > 31 || Number(id2) > 31 || Number(id3) > 31) return;
-
         const main = await this.dishRepository.findOne({
           where: {
             position: Number(id1),
@@ -238,10 +270,6 @@ export class MenusService {
         const calories = main.calories + side.calories + dessert.calories;
         const price = main.unitPrice + side.unitPrice + dessert.unitPrice;
         const priorityLevel = this.suitability(price, calories);
-        console.log(
-          '🚀 ~ file: menus.service.ts ~ line 238 ~ MenusService ~ newData.forEach ~ priorityLevel',
-          priorityLevel,
-        );
 
         if (priorityLevel < 200) return;
         /*

@@ -54,6 +54,10 @@ export const GAConstant = {
   numberBitBinary: 5,
   daysOfWeek: 6,
   K: 100000,
+  percentMutation: {
+    max: 0.1,
+    min: 0.0625,
+  },
 };
 
 export class Individual {
