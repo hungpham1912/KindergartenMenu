@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
@@ -28,7 +29,7 @@ export class Meal {
   @Column({ default: 0, type: 'float' })
   calories: number;
 
-  @Column({ default: false })
+  @Column({ default: true })
   canUse: boolean;
 
   @Column({ default: 0 })
@@ -42,21 +43,24 @@ export class Meal {
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
+
+  @DeleteDateColumn({ type: 'timestamp' })
+  deletedAt: Date;
 }
 
 export const MealStandard = {
-  price: 50000,
-  calories: 600,
+  price: 45000,
+  calories: 400,
 };
 
 export const GAConstant = {
-  sizePopulation: 10,
+  sizePopulation: 30,
   numberBitBinary: 5,
   daysOfWeek: 6,
   K: 100000,
   percentMutation: {
-    max: 0.1,
-    min: 0.0625,
+    max: 6,
+    min: 3,
   },
 };
 

@@ -68,7 +68,11 @@ export class MealsService {
     return this.mealRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} meal`;
+  findOne(id: string) {
+    return this.mealRepository.findOne({ where: { id: id } });
+  }
+
+  remove(id: string) {
+    return this.mealRepository.softDelete(id);
   }
 }

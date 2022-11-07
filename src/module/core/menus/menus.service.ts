@@ -73,7 +73,7 @@ export class MenusService {
 
     while (data.total < GAConstant.daysOfWeek) {
       /*********Create populations**********/
-      const dataPopulation = await this.selectionOptimal();
+      const dataPopulation = await this.selectionRandom();
       const population = this.standardizedPopulation(dataPopulation);
       /*
        *********Selection of pairs of parents**********
@@ -147,8 +147,8 @@ export class MenusService {
         return item.position == data.listDessertsIds[j];
       });
 
-      const calories = main.calories + side.calories + dessert.calories;
-      const price = main.unitPrice + side.unitPrice + dessert.unitPrice;
+      const calories = main.calories + side.calories + dessert.calories + 200;
+      const price = main.unitPrice + side.unitPrice + dessert.unitPrice + 5000;
       const priorityLevel = this.suitability(price, calories);
 
       updateMealDto.push({ calories, price, priorityLevel, id: ds[j].id });
@@ -165,28 +165,51 @@ export class MenusService {
   }
 
   mutation(data: string[]): string[] {
-    const length = Math.floor(Math.random() * 15);
+    const percent =
+      Math.floor(
+        Math.random() *
+          (GAConstant.percentMutation.max - GAConstant.percentMutation.min),
+      ) + GAConstant.percentMutation.min;
 
-    const arrayMutation = [];
-
-    for (let i = 0; i < length; i++) {
-      arrayMutation.push(Math.floor(Math.random() * 15));
+    const addSelect = [];
+    for (let i = 1; i <= percent; i++) {
+      addSelect.push(i);
     }
 
-    const newData = [];
+    let check = true;
 
-    data.forEach((item) => {
-      let ds = item;
-      for (let j = 0; j < arrayMutation.length; j++) {
-        if (ds[arrayMutation[j]] === '0')
-          ds = this.replaceAt(ds, arrayMutation[j], '1');
-        if (data[arrayMutation[j]] === '1')
-          ds = this.replaceAt(ds, arrayMutation[j], '0');
+    for (let j = 1; j <= percent; j++) {
+      const cur = Math.floor(Math.random() * 100) + 1;
+      if (!addSelect.includes(cur)) {
+        check = false;
       }
-      newData.push(ds);
-    });
+    }
 
-    return newData;
+    if (check) {
+      const length = Math.floor(Math.random() * 15);
+
+      const arrayMutation = [];
+
+      for (let i = 0; i < length; i++) {
+        arrayMutation.push(Math.floor(Math.random() * 15));
+      }
+
+      const newData = [];
+
+      data.forEach((item) => {
+        let ds = item;
+        for (let j = 0; j < arrayMutation.length; j++) {
+          if (ds[arrayMutation[j]] === '0')
+            ds = this.replaceAt(ds, arrayMutation[j], '1');
+          if (data[arrayMutation[j]] === '1')
+            ds = this.replaceAt(ds, arrayMutation[j], '0');
+        }
+        newData.push(ds);
+      });
+
+      return newData;
+    }
+    return data;
   }
 
   replaceAt(str: string, index: number, replacement: string) {
@@ -269,9 +292,13 @@ export class MenusService {
 
         const calories = main.calories + side.calories + dessert.calories;
         const price = main.unitPrice + side.unitPrice + dessert.unitPrice;
-        const priorityLevel = this.suitability(price, calories);
 
-        if (priorityLevel < 200) return;
+        if (
+          price > MealStandard.price ||
+          price < MealStandard.price - 10000 ||
+          Math.abs(calories - MealStandard.calories) > 100
+        )
+          return;
         /*
          *********Check duplicate dish main**********
          */
@@ -389,11 +416,14 @@ export class MenusService {
     );
   }
 
-  async selectionOptimal() {
-    return await this.mealRepository.find({
-      where: { price: MoreThan(0) },
-      order: { priorityLevel: 'DESC' },
-      take: GAConstant.sizePopulation,
-    });
+  async selectionRandom() {
+    return await this.mealRepository
+      .createQueryBuilder('meals')
+      .leftJoinAndSelect('meals.dishMeal', 'dishMeal')
+      .leftJoinAndSelect('dishMeal.dish', 'dish')
+      .where({ price: MoreThan(0), canUse: false })
+      .addSelect('RANDOM()', 'random')
+      .take(GAConstant.sizePopulation)
+      .getMany();
   }
 }
