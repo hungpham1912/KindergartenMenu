@@ -10,6 +10,7 @@ export enum DishStatus {
   MAIN_DISH = 'MAIN_DISH',
   SIDE_DISH = 'SIDE_DISH',
   DESSERTS = 'DESSERTS',
+  SIDE_MEAL = 'SIDE_MEAL',
 }
 
 @Entity('dish')
