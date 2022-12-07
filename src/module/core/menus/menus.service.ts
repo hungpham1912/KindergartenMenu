@@ -28,77 +28,78 @@ export class MenusService {
     return this.menuRepository.softDelete(id);
   }
 
-  async create() {
-    const start = new Date('2022-10-03T08:33:50.180Z');
-    const end = new Date('2022-10-08T08:33:50.180Z');
-    return await this.menuRepository.save({ startTime: start, endTime: end });
-  }
   async genKindergarten() {
-    const now = new Date();
+    try {
+      const now = new Date();
 
-    const menu = await this.menuRepository.findOne({
-      where: {},
-      order: { createdAt: 'DESC' },
-    });
+      const menu = await this.menuRepository.findOne({
+        where: {},
+        order: { createdAt: 'DESC' },
+      });
 
-    /*
-     *********Check menu exist*********
-     */
-    if (menu) {
-      if (now < menu.endTime) return menu;
+      /*
+       *********Check menu exist*********
+       */
+      if (menu) {
+        if (now < menu.endTime) return menu;
+      }
+
+      const current = now.getDay();
+      const diff = now.getDate() - current + (current == 0 ? -6 : 1); // adjust when day is sunday
+      const month = now.getMonth();
+      const startTime = new Date(now.setDate(diff));
+
+      const endTime = new Date(now.setDate(diff + 6));
+      endTime.setUTCMonth(month);
+
+      const createMenu = await this.menuRepository.save({
+        startTime: startTime,
+        endTime: endTime,
+      });
+      /*
+       *********Handle Genetic Algorithm**********
+       */
+
+      let data: TargetMenu = {
+        total: 0,
+        listMainIds: [],
+        listDessertsIds: [],
+        listSideIds: [],
+      };
+
+      while (data.total < GAConstant.daysOfWeek) {
+        /*********Create populations**********/
+        const dataPopulation = await this.selectionRandom();
+        const population = this.standardizedPopulation(dataPopulation);
+        /*
+         *********Selection of pairs of parents**********
+         */
+        const arraySelect = this.rouletteWheel(population);
+        /*
+         *********Coding an individual's chromosome**********
+         */
+        const encodingChromosome = this.encodingChromosome(arraySelect);
+        /*
+         *********Breeding out a set of children**********
+         */
+        const childChromosome = this.crossBreeding(encodingChromosome);
+        /*
+         *********Mutation**********
+         */
+        const afterMutation = this.mutation(childChromosome);
+        /*
+         *********Check the duplicate of main dish and **********
+         */
+        data = this.standardizedIndividual(data, afterMutation);
+      }
+
+      await this.createMeals(createMenu.id, data);
+      return await this.menuRepository.findOne({
+        where: { id: createMenu.id },
+      });
+    } catch (error) {
+      console.log('🚀 ~ file: menus.service.ts:106  ~ error', error);
     }
-
-    const current = now.getDay();
-    const diff = now.getDate() - current + (current == 0 ? -6 : 1); // adjust when day is sunday
-    const month = now.getMonth();
-    const startTime = new Date(now.setDate(diff));
-
-    const endTime = new Date(now.setDate(diff + 6));
-    endTime.setUTCMonth(month);
-
-    const createMenu = await this.menuRepository.save({
-      startTime: startTime,
-      endTime: endTime,
-    });
-    /*
-     *********Handle Genetic Algorithm**********
-     */
-
-    let data: TargetMenu = {
-      total: 0,
-      listMainIds: [],
-      listDessertsIds: [],
-      listSideIds: [],
-    };
-
-    while (data.total < GAConstant.daysOfWeek) {
-      /*********Create populations**********/
-      const dataPopulation = await this.selectionRandom();
-      const population = this.standardizedPopulation(dataPopulation);
-      /*
-       *********Selection of pairs of parents**********
-       */
-      const arraySelect = this.rouletteWheel(population);
-      /*
-       *********Coding an individual's chromosome**********
-       */
-      const encodingChromosome = this.encodingChromosome(arraySelect);
-      /*
-       *********Breeding out a set of children**********
-       */
-      const childChromosome = this.crossBreeding(encodingChromosome);
-      /*
-       *********Mutation**********
-       */
-      const afterMutation = this.mutation(childChromosome);
-      /*
-       *********Check the duplicate of main dish and **********
-       */
-      data = this.standardizedIndividual(data, afterMutation);
-    }
-
-    await this.createMeals(createMenu.id, data);
-    return await this.menuRepository.findOne({ where: { id: createMenu.id } });
   }
 
   async createMeals(menuId: string, data: TargetMenu) {
@@ -291,12 +292,13 @@ export class MenusService {
         });
 
         const calories = main.calories + side.calories + dessert.calories;
+
         const price = main.unitPrice + side.unitPrice + dessert.unitPrice;
 
         if (
           price > MealStandard.price ||
           price < MealStandard.price - 10000 ||
-          Math.abs(calories - MealStandard.calories) > 100
+          Math.abs(calories - MealStandard.calories) > 65
         )
           return;
         /*

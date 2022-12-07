@@ -63,15 +63,25 @@ export class DishsController {
     return this.dishsService.findOne(id);
   }
 
+  @Patch('superUpdate')
+  async superUpdate() {
+    return await this.dishsService.superUpdate();
+  }
   @ApiBody({
     schema: {
       type: 'object',
-      example: {},
+      example: {
+        nameDish: 'Cơm',
+        ingredients: [{ name: 'Gao', calories: 100, mass: 0.2 }],
+        calories: 100,
+        unitPrice: 5000,
+        dishStatus: DishStatus.SIDE_DISH,
+      },
     },
   })
   @Patch(':id')
-  async superUpdate(@Param('id') id: string, @Body() createDishDto: any) {
-    return await this.dishsService.superUpdate(id, createDishDto);
+  async update(@Param('id') id: string, @Body() body: any) {
+    return await this.dishsService.update(id, body);
   }
 
   @Delete(':id')

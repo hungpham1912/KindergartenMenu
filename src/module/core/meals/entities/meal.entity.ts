@@ -50,7 +50,7 @@ export class Meal {
 
 export const MealStandard = {
   price: 45000,
-  calories: 400,
+  calories: 480,
 };
 
 export const GAConstant = {

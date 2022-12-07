@@ -12,11 +12,6 @@ export class MenusController {
     return this.menusService.genKindergarten();
   }
 
-  @Post('add')
-  add() {
-    return this.menusService.create();
-  }
-
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.menusService.delete(id);
